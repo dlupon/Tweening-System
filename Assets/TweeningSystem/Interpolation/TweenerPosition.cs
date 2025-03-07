@@ -27,8 +27,6 @@ namespace UnBocal.TweeningSystem
 
         protected override void UpdateInterpolation(Transform pObject)
         {
-            Debug.Log(m_ratio);
-
             Vector3 lDirection = _endPosition - _startPosition;
             pObject.position = _startPosition + lDirection * m_easeFunction(m_ratio);
         }
