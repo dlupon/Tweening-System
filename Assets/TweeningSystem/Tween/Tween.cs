@@ -27,8 +27,7 @@ namespace UnBocal.TweeningSystem
 		float _timeEnd;
 
 		// -------~~~~~~~~~~================# // Tweeners
-		private Transform _object;
-		public List<Tweener> _tweeners = new List<Tweener>();
+		private Dictionary<Transform, List<Tweener>> _objectsAndTweeners = new Dictionary<Transform, List<Tweener>>();
 
 		// ----------------~~~~~~~~~~~~~~~~~~~==========================# // Control
 		public void Start()
@@ -50,27 +49,29 @@ namespace UnBocal.TweeningSystem
 
 		public void Reset()
 		{
-            foreach (var lTweener in _tweeners)
-                lTweener.Reset();
+			foreach (Transform lObject in _objectsAndTweeners.Keys) foreach (var lTweener in _objectsAndTweeners[lObject])
+				lTweener.ResetTime();
         }
 
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Update
         public void UpdateInterpolation()
         {
 			bool lIsFinished = true;
-			foreach (var lTweener in _tweeners)
+
+            foreach (Transform lObject in _objectsAndTweeners.Keys) foreach (var lTweener in _objectsAndTweeners[lObject])
 			{
-                lTweener.Interpolate(_object);
+				lTweener.Interpolate(lObject);
 				if (lTweener.Finished) continue;
 				lIsFinished = false;
-            }
+			}
 
 			if (!lIsFinished) return;
 			TweenExecutionHandler.RemoveTween(this);
         }
 
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolation
-        public void Interpolate(Transform pObject, Properties pProperties, Vector3 pStartPosition = default, Vector3 pEndPosition = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f)
+		// -------~~~~~~~~~~================# // Position Or Scale
+		public void Interpolate(Transform pObject, Properties pProperties, Vector3 pStartPosition = default, Vector3 pEndPosition = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f)
 		{
 			if (!(pProperties == Properties.POSITION || pProperties == Properties.SCALE))
 			{
@@ -78,14 +79,47 @@ namespace UnBocal.TweeningSystem
 				return;
 			}
 
-			_object = pObject;
+			Tweener lTweener;
 
-			Tweener lTweener = new TweenerPosition(pStartPosition, pEndPosition, pDuration, pEase, pDelay);
-			_tweeners.Add(lTweener);
-		}
+            switch (pProperties)
+			{
+				case Properties.POSITION:
+                    lTweener = new TweenerPosition(pStartPosition, pEndPosition, pDuration, pEase, pDelay);
+					break;
+				
+				case Properties.SCALE:
+                    lTweener = new TweenerPosition(pStartPosition, pEndPosition, pDuration, pEase, pDelay);
+					break;
 
-		// ----------------~~~~~~~~~~~~~~~~~~~==========================# // Errors
-		private void ErrorWrongProperties(Transform pObject, Type pType, Properties pGiventProperty, params Properties[] pUsableProperties)
+				default: return;
+            }
+
+			AddTweener(pObject, lTweener);
+        }
+
+        // -------~~~~~~~~~~================# // Rotation
+        public void Interpolate(Transform pObject, Properties pProperties, Quaternion pStartRotation = default, Quaternion pEndRotation = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f)
+        {
+            if (!(pProperties == Properties.ROTATION))
+            {
+                ErrorWrongProperties(pObject, pStartRotation.GetType(), pProperties, Properties.ROTATION);
+                return;
+            }
+
+            Tweener lTweener = new TweenerRotationFast(pStartRotation, pEndRotation, pDuration, pEase, pDelay);
+
+            AddTweener(pObject, lTweener);
+        }
+
+        // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Store Tweeners
+		private void AddTweener(Transform pObject, Tweener pTweener)
+		{
+			if (!_objectsAndTweeners.ContainsKey(pObject))  _objectsAndTweeners[pObject] = new List<Tweener>();
+            _objectsAndTweeners[pObject].Add(pTweener);
+        }
+
+        // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Errors
+        private void ErrorWrongProperties(Transform pObject, Type pType, Properties pGiventProperty, params Properties[] pUsableProperties)
 		{
 			string lUsableProperitesNames = "" + pUsableProperties[0];
 			int lPropertiesCount = pUsableProperties.Length;
