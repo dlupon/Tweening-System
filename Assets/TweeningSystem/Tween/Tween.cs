@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnBocal.TweeningSystem.Interpolations;
+using System.Linq;
 
 namespace UnBocal.TweeningSystem
 {
@@ -12,8 +14,8 @@ namespace UnBocal.TweeningSystem
 		public enum Properties
 		{
 			POSITION,
-			SCALE,
-			ROTATION
+			ROTATION,
+			SCALE
 		}
 
 		// -------~~~~~~~~~~================# // Events
@@ -21,105 +23,118 @@ namespace UnBocal.TweeningSystem
 		public UnityEvent<Transform> OnStoped = new UnityEvent<Transform>();
 
 		// -------~~~~~~~~~~================# // Time
-		float _delay;
-		float _duration;
-		float _timeStart;
-		float _timeEnd;
+		bool _isFinished = true;
 
-		// -------~~~~~~~~~~================# // Tweeners
-		private Dictionary<Transform, List<Tweener>> _objectsAndTweeners = new Dictionary<Transform, List<Tweener>>();
+		// -------~~~~~~~~~~================# // Interpolators
+		Dictionary<Transform, List<IInterpolator>> _objectsAndInterpolators = new Dictionary<Transform, List<IInterpolator>>();
 
 		// ----------------~~~~~~~~~~~~~~~~~~~==========================# // Control
 		public void Start()
 		{
 			Reset();
-            TweenExecutionHandler.AddTweenToUpdate(this);
-            TweenExecutionHandler.StartUpdateTween();
-        }
-
-		public void Pause()
-		{
-
-        }
-
-		public void Revert()
-		{
-
+			TweenExecutionHandler.AddTweenToUpdate(this);
+			TweenExecutionHandler.StartUpdateTween();
 		}
 
-		public void Reset()
+        public void Reset() => DoOnInterpolator(ResetInterpolator);
+
+		// ----------------~~~~~~~~~~~~~~~~~~~==========================# // Update
+		public void UpdateInterpolation()
 		{
-			foreach (Transform lObject in _objectsAndTweeners.Keys) foreach (var lTweener in _objectsAndTweeners[lObject])
-				lTweener.ResetTime();
-        }
+			_isFinished = true;
 
-        // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Update
-        public void UpdateInterpolation()
-        {
-			bool lIsFinished = true;
+			DoOnInterpolator(UpdateInterpolator);
 
-            foreach (Transform lObject in _objectsAndTweeners.Keys) foreach (var lTweener in _objectsAndTweeners[lObject])
-			{
-				lTweener.Interpolate(lObject);
-				if (lTweener.Finished) continue;
-				lIsFinished = false;
-			}
-
-			if (!lIsFinished) return;
+			if (!_isFinished) return;
 			TweenExecutionHandler.RemoveTween(this);
+		}
+
+        // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Object
+		private void AddObject(Transform pObject) => _objectsAndInterpolators[pObject] = new List<IInterpolator>();
+
+        // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolator
+        void AddInterpolator(Transform pObject, IInterpolator pInterpolator)
+        {
+            if (!_objectsAndInterpolators.ContainsKey(pObject)) _objectsAndInterpolators[pObject] = new List<IInterpolator>();
+            _objectsAndInterpolators[pObject].Add(pInterpolator);
         }
 
-        // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolation
-		// -------~~~~~~~~~~================# // Position Or Scale
-		public void Interpolate(Transform pObject, Properties pProperties, Vector3 pStartPosition = default, Vector3 pEndPosition = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f)
-		{
-			if (!(pProperties == Properties.POSITION || pProperties == Properties.SCALE))
+        private void DoOnInterpolator(Action<Transform, IInterpolator> pFunc)
+        {
+			int lInterpolatorCount;
+            foreach (Transform lObject in _objectsAndInterpolators.Keys)
 			{
-				ErrorWrongProperties(pObject, pStartPosition.GetType(), pProperties, Properties.POSITION, Properties.SCALE);
-				return;
+                lInterpolatorCount = _objectsAndInterpolators[lObject].Count;
+				for (int lIndexInterpolator = lInterpolatorCount - 1; lIndexInterpolator  >= 0; lIndexInterpolator--)
+                    pFunc(lObject, _objectsAndInterpolators[lObject][lIndexInterpolator]);
 			}
+        }
 
-			Tweener lTweener;
+        private void UpdateInterpolator(Transform pObject, IInterpolator pInterpolator)
+        {
+            pInterpolator.Interpolate(pObject);
+            if (pInterpolator.IsFinished()) return;
+            _isFinished = false;
+        }
+
+		private void ResetInterpolator(Transform pObject, IInterpolator pInterpolator) => pInterpolator.Reset(pObject);
+
+		private void FindInterpolatorAndAddInterpolator<ValueType>(Transform pObject, Interpolation<ValueType> pInterpolation, Properties pProperties)
+		{
+			if (_objectsAndInterpolators.Keys.Contains(pObject))
+			{
+				foreach (IInterpolator pInterpolator in _objectsAndInterpolators[pObject])
+				{
+					if (!(pInterpolator is PropertyInterpolator<ValueType>)) continue;
+					((PropertyInterpolator<ValueType>)pInterpolator).AddInterpolation(pInterpolation);
+					return;
+				}
+			}
+			else AddObject(pObject);
+
+			CreateInterpolatorAndAddInterpolator(pObject, pInterpolation, pProperties);
+		}
+
+		private void CreateInterpolatorAndAddInterpolator<ValueType>(Transform pObject, Interpolation<ValueType> pInterpolation, Properties pProperties)
+		{
+			IInterpolator lInterpolator = null;
 
             switch (pProperties)
 			{
 				case Properties.POSITION:
-                    lTweener = new TweenerPosition(pStartPosition, pEndPosition, pDuration, pEase, pDelay);
-					break;
-				
-				case Properties.SCALE:
-                    lTweener = new TweenerPosition(pStartPosition, pEndPosition, pDuration, pEase, pDelay);
-					break;
+					lInterpolator = new PositionInterpolator();
+                    break;
 
-				default: return;
+				case  Properties.ROTATION:
+                    lInterpolator = new RotationFastInterpolator();
+                    break;
+
+				case  Properties.SCALE:
+                    lInterpolator = new ScaleInterpolator();
+                    break;
             }
 
-			AddTweener(pObject, lTweener);
+			if (lInterpolator == null) return;
+
+            ((PropertyInterpolator<ValueType>)lInterpolator)?.AddInterpolation(pInterpolation);
+			AddInterpolator(pObject, lInterpolator);
         }
 
-        // -------~~~~~~~~~~================# // Rotation
-        public void Interpolate(Transform pObject, Properties pProperties, Quaternion pStartRotation = default, Quaternion pEndRotation = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f)
-        {
-            if (!(pProperties == Properties.ROTATION))
-            {
-                ErrorWrongProperties(pObject, pStartRotation.GetType(), pProperties, Properties.ROTATION);
-                return;
-            }
-
-            Tweener lTweener = new TweenerRotationFast(pStartRotation, pEndRotation, pDuration, pEase, pDelay);
-
-            AddTweener(pObject, lTweener);
-        }
-
-        // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Store Tweeners
-		private void AddTweener(Transform pObject, Tweener pTweener)
+        // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolations
+        public void Interpolate<ValueType>(Transform pObject, Properties pProperties, ValueType pStartValue = default, ValueType pEndValue = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f)
 		{
-			if (!_objectsAndTweeners.ContainsKey(pObject))  _objectsAndTweeners[pObject] = new List<Tweener>();
-            _objectsAndTweeners[pObject].Add(pTweener);
+			Interpolation<ValueType> lInterpolation = new Interpolation<ValueType>();
+            lInterpolation.StartValue = pStartValue;
+            lInterpolation.EndValue = pEndValue;
+            lInterpolation.Duration = pDuration;
+            lInterpolation.Delay = pDelay;
+            lInterpolation.EaseFunction = pEase;
+
+			FindInterpolatorAndAddInterpolator(pObject, lInterpolation, pProperties);
         }
 
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Errors
-        private void ErrorWrongProperties(Transform pObject, Type pType, Properties pGiventProperty, params Properties[] pUsableProperties)
+        void ErrorWrongProperties(Transform pObject, Type pType, Properties pGiventProperty, params Properties[] pUsableProperties)
 		{
 			string lUsableProperitesNames = "" + pUsableProperties[0];
 			int lPropertiesCount = pUsableProperties.Length;
