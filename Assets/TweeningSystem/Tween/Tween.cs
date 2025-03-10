@@ -11,13 +11,6 @@ namespace UnBocal.TweeningSystem
 {
 	public class Tween
 	{
-		public enum Properties
-		{
-			POSITION,
-			ROTATION,
-			SCALE
-		}
-
 		// -------~~~~~~~~~~================# // Events
 		public UnityEvent<Transform> OnStarted = new UnityEvent<Transform>();
 		public UnityEvent<Transform> OnStoped = new UnityEvent<Transform>();
@@ -53,12 +46,6 @@ namespace UnBocal.TweeningSystem
 		private void AddObject(Transform pObject) => _objectsAndInterpolators[pObject] = new List<IInterpolator>();
 
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolator
-        void AddInterpolator(Transform pObject, IInterpolator pInterpolator)
-        {
-            if (!_objectsAndInterpolators.ContainsKey(pObject)) _objectsAndInterpolators[pObject] = new List<IInterpolator>();
-            _objectsAndInterpolators[pObject].Add(pInterpolator);
-        }
-
         private void DoOnInterpolator(Action<Transform, IInterpolator> pFunc)
         {
 			int lInterpolatorCount;
@@ -70,6 +57,12 @@ namespace UnBocal.TweeningSystem
 			}
         }
 
+        void AddInterpolator(Transform pObject, IInterpolator pInterpolator)
+        {
+			if (!_objectsAndInterpolators.ContainsKey(pObject)) AddObject(pObject);
+            _objectsAndInterpolators[pObject].Add(pInterpolator);
+        }
+
         private void UpdateInterpolator(Transform pObject, IInterpolator pInterpolator)
         {
             pInterpolator.Interpolate(pObject);
@@ -79,62 +72,74 @@ namespace UnBocal.TweeningSystem
 
 		private void ResetInterpolator(Transform pObject, IInterpolator pInterpolator) => pInterpolator.Reset(pObject);
 
-		private void FindInterpolatorAndAddInterpolator<ValueType>(Transform pObject, Interpolation<ValueType> pInterpolation, Properties pProperties)
-		{
+		private IInterpolator FindInterpolator<InterpolatorType>(Transform pObject) where InterpolatorType : IInterpolator
+        {
 			if (_objectsAndInterpolators.Keys.Contains(pObject))
 			{
 				foreach (IInterpolator pInterpolator in _objectsAndInterpolators[pObject])
 				{
-					if (!(pInterpolator is PropertyInterpolator<ValueType>)) continue;
-					((PropertyInterpolator<ValueType>)pInterpolator).AddInterpolation(pInterpolation);
-					return;
+					if (!(pInterpolator is InterpolatorType)) continue;
+					return pInterpolator;
 				}
 			}
 			else AddObject(pObject);
 
-			CreateInterpolatorAndAddInterpolator(pObject, pInterpolation, pProperties);
+			return CreateInterpolator<InterpolatorType>(pObject);
 		}
 
-		private void CreateInterpolatorAndAddInterpolator<ValueType>(Transform pObject, Interpolation<ValueType> pInterpolation, Properties pProperties)
+		private IInterpolator CreateInterpolator<InterpolatorType>(Transform pObject) where InterpolatorType : IInterpolator
 		{
-			IInterpolator lInterpolator = null;
+            IInterpolator lInterpolator = null;
 
-            switch (pProperties)
+            switch (typeof(InterpolatorType).Name)
 			{
-				case Properties.POSITION:
-					lInterpolator = new PositionInterpolator();
-                    break;
+				case nameof(Position): lInterpolator = new Position(); break;
+				case nameof(Scale): lInterpolator = new Scale(); break;
+				case nameof(RotationFast): lInterpolator = new RotationFast(); break;
+			}
 
-				case  Properties.ROTATION:
-                    lInterpolator = new RotationFastInterpolator();
-                    break;
-
-				case  Properties.SCALE:
-                    lInterpolator = new ScaleInterpolator();
-                    break;
-            }
-
-			if (lInterpolator == null) return;
-
-            ((PropertyInterpolator<ValueType>)lInterpolator)?.AddInterpolation(pInterpolation);
 			AddInterpolator(pObject, lInterpolator);
+
+            return lInterpolator;
         }
 
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolations
-        public void Interpolate<ValueType>(Transform pObject, Properties pProperties, ValueType pStartValue = default, ValueType pEndValue = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f)
+        public void Interpolate<InterolatorType>(Transform pObject, object pStartValue = default, object pEndValue = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f) where InterolatorType : IInterpolator
+        {
+			IInterpolator pInterpolator = FindInterpolator<InterolatorType>(pObject);
+
+			switch (pStartValue.GetType().Name)
+			{
+				case nameof(Vector3):
+                    CreateAndAddInterpolation(pInterpolator, (Vector3)pStartValue, (Vector3)pEndValue, pDuration, pEase, pDelay);
+                    return;
+
+				case nameof(Quaternion):
+                    CreateAndAddInterpolation(pInterpolator, (Quaternion)pStartValue, (Quaternion)pEndValue, pDuration, pEase, pDelay);
+					return;
+			}			
+        }
+
+		private void CreateAndAddInterpolation<ValueType>(IInterpolator pInterpolator, ValueType pStartValue = default, ValueType pEndValue = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f)
 		{
-			Interpolation<ValueType> lInterpolation = new Interpolation<ValueType>();
+			Interpolation<ValueType> lInterpolation = CreateInterpolation(pStartValue, pEndValue, pDuration, pEase, pDelay);
+            ((PropertyInterpolator<ValueType>)pInterpolator).AddInterpolation(lInterpolation);
+        }
+
+		private Interpolation<T> CreateInterpolation<T>(T pStartValue = default, T pEndValue = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f)
+        {
+            Interpolation<T> lInterpolation = new Interpolation<T>();
             lInterpolation.StartValue = pStartValue;
             lInterpolation.EndValue = pEndValue;
             lInterpolation.Duration = pDuration;
             lInterpolation.Delay = pDelay;
             lInterpolation.EaseFunction = pEase;
 
-			FindInterpolatorAndAddInterpolator(pObject, lInterpolation, pProperties);
+			return lInterpolation;
         }
 
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Errors
-        void ErrorWrongProperties(Transform pObject, Type pType, Properties pGiventProperty, params Properties[] pUsableProperties)
+        /*void ErrorWrongProperties(Transform pObject, Type pType, params Properties[] pUsableProperties)
 		{
 			string lUsableProperitesNames = "" + pUsableProperties[0];
 			int lPropertiesCount = pUsableProperties.Length;
@@ -144,6 +149,6 @@ namespace UnBocal.TweeningSystem
 			string lMessage = $"The given property \"{pGiventProperty}\" doesn't work with the type of interpolation currently used ({pType}). The Type {pType} only works with {lUsableProperitesNames}.";
 
 			Debug.LogError(lMessage);
-		}
-	}
+		}*/
+    }
 }

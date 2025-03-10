@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnBocal.TweeningSystem;
+using UnBocal.TweeningSystem.Interpolations;
 using UnBocal.TweeningSystem.Easing;
 
 // --~~~~======# Author : Lupon Dylan #======~~~~~~--- //
@@ -16,19 +17,12 @@ public class testing : MonoBehaviour
 	{
 		Vector3 lStartPosition = Vector3.zero;
 		Vector3 lEndPosition = Vector3.up;
-		float lDuration = 2f;
+        
+        _tween.Interpolate<Position>(transform, Vector3.up, Vector3.up * 2f, 1.5f, _curve.Evaluate);
+        _tween.Interpolate<RotationFast>(transform, Quaternion.identity, Quaternion.identity * Quaternion.AngleAxis(180f, Vector3.up), 1.5f, EaseFunction.EaseOutExpo);
+        _tween.Interpolate<RotationFast>(transform, Quaternion.identity, Quaternion.identity * Quaternion.AngleAxis(180f, Vector3.forward), 1.5f, _curve.Evaluate, 1.5f);
 
-        _tween.Interpolate(transform, Tween.Properties.POSITION, lStartPosition, lEndPosition, lDuration, EaseFunction.EaseOutBack);
-
-        _tween.Interpolate(transform, Tween.Properties.POSITION, lEndPosition, lEndPosition + Vector3.right, lDuration, EaseFunction.EaseInOutBounce, lDuration);
-
-        _tween.Interpolate(transform, Tween.Properties.ROTATION, transform.rotation, transform.rotation * Quaternion.AngleAxis(180f, Vector3.up), lDuration, EaseFunction.EaseOutExpo, lDuration);
-
-        // _tween.Interpolate(transform, Tween.Properties.SCALE, new Vector3(1.3f, .7f, 1.3f), transform.localScale, .5f, EaseFunction.EaseOutElastic, lDuration + 1);
-
-        _tween.Interpolate(_otherCube, Tween.Properties.POSITION, default, lStartPosition - Vector3.right, lDuration, EaseFunction.EaseInOutBack, lDuration);
-
-        // _tween.Interpolate(_otherCube, Tween.Properties.SCALE, new Vector3(1.3f, .7f, 1.3f), _otherCube.localScale, .5f, _curve.Evaluate, lDuration + 1);
+        _tween.Interpolate<Scale>(_otherCube, new Vector3(1.3f, .7f, 1.3f), _otherCube.localScale, 1.5f, EaseFunction.EaseOutBack);
 
         _tween.Start();
     }

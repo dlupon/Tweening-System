@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UnBocal.TweeningSystem.Interpolations
 {
-    public class RotationFastInterpolator : PropertyInterpolator<Quaternion>
+    public class RotationFast : PropertyInterpolator<Quaternion>
     {
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolate
         protected override void UpdateInterpolation(Transform pObject)

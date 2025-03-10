@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UnBocal.TweeningSystem.Interpolations
 {
-    public class ScaleInterpolator : PropertyInterpolator<Vector3>
+    public class Scale : PropertyInterpolator<Vector3>
     {
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolate
         protected override void UpdateInterpolation(Transform pObject)
