@@ -1,11 +1,12 @@
 // --~~~~======# Author : Lupon Dylan #======~~~~~~--- //
 // --~~~~======# Date   : 03 / 05 / 2025 #======~~~~-- //
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnBocal.TweeningSystem.Interpolations;
-using System.Linq;
+using Unity.VisualScripting;
 
 namespace UnBocal.TweeningSystem
 {
@@ -104,51 +105,16 @@ namespace UnBocal.TweeningSystem
         }
 
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolations
-        public void Interpolate<InterolatorType>(Transform pObject, object pStartValue = default, object pEndValue = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f) where InterolatorType : IInterpolator
+		public InterpolatorType Interpolate<InterpolatorType>(Transform pObject) where InterpolatorType : IInterpolator
+		 	=> (InterpolatorType)FindInterpolator<InterpolatorType>(pObject);
+
+        public InterpolatorType Interpolate<InterpolatorType, ValueType>(Transform pObject, ValueType pStartValue = default, ValueType pEndValue = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f) where InterpolatorType : PropertyInterpolator<ValueType> where ValueType : struct
         {
-			IInterpolator pInterpolator = FindInterpolator<InterolatorType>(pObject);
+			InterpolatorType lInterpolator = Interpolate<InterpolatorType>(pObject);
+			lInterpolator.Add(pStartValue, pEndValue, pDuration, pEase, pDelay);
 
-			switch (pStartValue.GetType().Name)
-			{
-				case nameof(Vector3):
-                    CreateAndAddInterpolation(pInterpolator, (Vector3)pStartValue, (Vector3)pEndValue, pDuration, pEase, pDelay);
-                    return;
-
-				case nameof(Quaternion):
-                    CreateAndAddInterpolation(pInterpolator, (Quaternion)pStartValue, (Quaternion)pEndValue, pDuration, pEase, pDelay);
-					return;
-			}			
+            return lInterpolator;
         }
 
-		private void CreateAndAddInterpolation<ValueType>(IInterpolator pInterpolator, ValueType pStartValue = default, ValueType pEndValue = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f)
-		{
-			Interpolation<ValueType> lInterpolation = CreateInterpolation(pStartValue, pEndValue, pDuration, pEase, pDelay);
-            ((PropertyInterpolator<ValueType>)pInterpolator).AddInterpolation(lInterpolation);
-        }
-
-		private Interpolation<T> CreateInterpolation<T>(T pStartValue = default, T pEndValue = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f)
-        {
-            Interpolation<T> lInterpolation = new Interpolation<T>();
-            lInterpolation.StartValue = pStartValue;
-            lInterpolation.EndValue = pEndValue;
-            lInterpolation.Duration = pDuration;
-            lInterpolation.Delay = pDelay;
-            lInterpolation.EaseFunction = pEase;
-
-			return lInterpolation;
-        }
-
-        // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Errors
-        /*void ErrorWrongProperties(Transform pObject, Type pType, params Properties[] pUsableProperties)
-		{
-			string lUsableProperitesNames = "" + pUsableProperties[0];
-			int lPropertiesCount = pUsableProperties.Length;
-
-			for (int lPropertyIndex = 1; lPropertyIndex < lPropertiesCount; lPropertyIndex++) lUsableProperitesNames += $", or {pUsableProperties[lPropertyIndex]}";
-
-			string lMessage = $"The given property \"{pGiventProperty}\" doesn't work with the type of interpolation currently used ({pType}). The Type {pType} only works with {lUsableProperitesNames}.";
-
-			Debug.LogError(lMessage);
-		}*/
     }
 }

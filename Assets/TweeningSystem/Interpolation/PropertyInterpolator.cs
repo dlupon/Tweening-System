@@ -1,6 +1,8 @@
 // --~~~~======# Author : Lupon Dylan #======~~~~~~--- //
 // --~~~~======# Date   : 03 / 05 / 2025 #======~~~~-- //
+using System;
 using System.Collections.Generic;
+using UnBocal.TweeningSystem.Easing;
 using UnityEngine;
 
 namespace UnBocal.TweeningSystem.Interpolations
@@ -53,7 +55,19 @@ namespace UnBocal.TweeningSystem.Interpolations
             m_startTime = Time.time;
         }
 
-        public void AddInterpolation(Interpolation<ValueType> pInterpolation)
+        public void Add(ValueType pStartValue = default, ValueType pEndValue = default, float pDuration = 1, Func<float, float> pEase = default, float pDelay = 0f)
+        {
+            Interpolation<ValueType> lInterpolation = new Interpolation<ValueType>();
+            lInterpolation.StartValue = pStartValue;
+            lInterpolation.EndValue = pEndValue;
+            lInterpolation.Duration = pDuration;
+            lInterpolation.Delay = pDelay;
+            lInterpolation.EaseFunction = pEase != default ? pEase : EaseFunction.Flat;
+
+            Add(lInterpolation);
+        }
+
+        public void Add(Interpolation<ValueType> pInterpolation)
         {
             int lInterpolationCount = _interpolations.Count;
             for (int lInterpolationIndex = lInterpolationCount -1; lInterpolationIndex >= 0; lInterpolationCount--)

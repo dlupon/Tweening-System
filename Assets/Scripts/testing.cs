@@ -15,14 +15,8 @@ public class testing : MonoBehaviour
 	// ----------------~~~~~~~~~~~~~~~~~~~==========================# // Unity   
 	private void Start()
 	{
-		Vector3 lStartPosition = Vector3.zero;
-		Vector3 lEndPosition = Vector3.up;
-        
-        _tween.Interpolate<Position>(transform, Vector3.up, Vector3.up * 2f, 1.5f, _curve.Evaluate);
-        _tween.Interpolate<RotationFast>(transform, Quaternion.identity, Quaternion.identity * Quaternion.AngleAxis(180f, Vector3.up), 1.5f, EaseFunction.EaseOutExpo);
-        _tween.Interpolate<RotationFast>(transform, Quaternion.identity, Quaternion.identity * Quaternion.AngleAxis(180f, Vector3.forward), 1.5f, _curve.Evaluate, 1.5f);
-
-        _tween.Interpolate<Scale>(_otherCube, new Vector3(1.3f, .7f, 1.3f), _otherCube.localScale, 1.5f, EaseFunction.EaseOutBack);
+        _tween.Interpolate<Position>(transform).Add(Vector3.zero, Vector3.up);
+        _tween.Interpolate<Position, Vector3>(transform, Vector3.up, Vector3.up + Vector3.right, pDelay : 1f);
 
         _tween.Start();
     }
