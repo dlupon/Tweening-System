@@ -3,10 +3,11 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
+using UnBocal.TweeningSystem.Interfaces;
 using UnBocal.TweeningSystem.Interpolations;
-using Unity.VisualScripting;
 
 namespace UnBocal.TweeningSystem
 {
@@ -90,15 +91,7 @@ namespace UnBocal.TweeningSystem
 
 		private IInterpolator CreateInterpolator<InterpolatorType>(Transform pObject) where InterpolatorType : IInterpolator
 		{
-            IInterpolator lInterpolator = null;
-
-            switch (typeof(InterpolatorType).Name)
-			{
-				case nameof(Position): lInterpolator = new Position(); break;
-				case nameof(Scale): lInterpolator = new Scale(); break;
-				case nameof(RotationFast): lInterpolator = new RotationFast(); break;
-			}
-
+            IInterpolator lInterpolator = InterpolationFactory.GetNew<InterpolatorType>();
 			AddInterpolator(pObject, lInterpolator);
 
             return lInterpolator;

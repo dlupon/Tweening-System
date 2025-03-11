@@ -2,8 +2,9 @@
 // --~~~~======# Date   : 03 / 05 / 2025 #======~~~~-- //
 using System;
 using System.Collections.Generic;
-using UnBocal.TweeningSystem.Easing;
 using UnityEngine;
+using UnBocal.TweeningSystem.Easing;
+using UnBocal.TweeningSystem.Interfaces;
 
 namespace UnBocal.TweeningSystem.Interpolations
 {

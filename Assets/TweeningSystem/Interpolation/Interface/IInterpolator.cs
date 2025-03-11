@@ -1,9 +1,8 @@
 // --~~~~======# Author : Lupon Dylan #======~~~~~~--- //
 // --~~~~======# Date   : 03 / 08 / 2025 #======~~~~-- //
-using System;
 using UnityEngine;
 
-namespace UnBocal.TweeningSystem.Interpolations
+namespace UnBocal.TweeningSystem.Interfaces
 {
     public interface IInterpolator
     {
