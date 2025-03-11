@@ -7,45 +7,6 @@ namespace UnBocal.TweeningSystem.Easing
 {
     public static class EaseFunction
     {
-        // -------~~~~~~~~~~================# // FLat
-        public static float Flat(float pRatio) => pRatio;
-
-        // -------~~~~~~~~~~================# // Circ
-        public enum EaseType
-        {
-            None,
-            EaseInSin,
-            EaseInCubic,
-            EaseInQuad,
-            EaseInQuart,
-            EaseInQuint,
-            EaseInCirc,
-            EaseInElastic,
-            EaseInBack,
-            EaseInBounce,
-            EaseInExpo,
-            EaseOutSin,
-            EaseOutCubic,
-            EaseOutQuad,
-            EaseOutQuart,
-            EaseOutQuint,
-            EaseOutCirc,
-            EaseOutElastic,
-            EaseOutBack,
-            EaseOutBounce,
-            EaseOutExpo,
-            EaseInOutSin,
-            EaseInOutCubic,
-            EaseInOutQuad,
-            EaseInOutQuart,
-            EaseInOutQuint,
-            EaseInOutCirc,
-            EaseInOutElastic,
-            EaseInOutBack,
-            EaseInOutBounce,
-            EaseInOutExpo,
-        }
-
         private const float c1 = 1.70158f;
         private const float c2 = c1 * 1.525f;
         private const float c3 = c1 + 1;
@@ -54,23 +15,25 @@ namespace UnBocal.TweeningSystem.Easing
         private const float n1 = 7.5625f;
         private const float d1 = 2.75f;
 
+        public static float Flat(float pRatio) => pRatio;
+
         #region easeIns
-        public static float EaseInSin(float pX)
+        public static float InSin(float pX)
         {
             return 1 - Mathf.Cos(pX * Mathf.PI / 2);
         }
 
-        public static float EaseInCubic(float pX)
+        public static float InCubic(float pX)
         {
             return pX * pX * pX;
         }
 
-        public static float EaseInCirc(float pX)
+        public static float InCirc(float pX)
         {
             return 1 - Mathf.Sqrt(1 - Mathf.Pow(pX, 2));
         }
 
-        public static float EaseInQuint(float pX)
+        public static float InQuint(float pX)
         {
             return pX * pX * pX * pX * pX;
         }
@@ -80,22 +43,22 @@ namespace UnBocal.TweeningSystem.Easing
         /// </summary>
         /// <param name="pX"></param>
         /// <returns></returns>
-        public static float EaseInElastic(float pX)
+        public static float InElastic(float pX)
         {
             return pX == 0 ? 0 : pX == 1 ? 1 : -Mathf.Pow(2, 10 * pX - 10) * Mathf.Sin((pX * 10f - 10.75f) * c4);
         }
 
-        public static float EaseInQuad(float pX)
+        public static float InQuad(float pX)
         {
             return pX * pX;
         }
 
-        public static float EaseInQuart(float pX)
+        public static float InQuart(float pX)
         {
             return pX * pX * pX * pX;
         }
 
-        public static float EaseInExpo(float pX)
+        public static float InExpo(float pX)
         {
             return Mathf.Exp(pX);
         }
@@ -105,34 +68,34 @@ namespace UnBocal.TweeningSystem.Easing
         /// </summary>
         /// <param name="pX"></param>
         /// <returns></returns>
-        public static float EaseInBack(float pX)
+        public static float InBack(float pX)
         {
             return c3 * pX * pX * pX - c1 * pX * pX;
         }
 
-        public static float EaseInBounce(float pX)
+        public static float InBounce(float pX)
         {
-            return 1 - EaseOutBounce(1 - pX);
+            return 1 - OutBounce(1 - pX);
         }
         #endregion
 
         #region EaseOuts
-        public static float EaseOutSin(float pX)
+        public static float OutSin(float pX)
         {
             return Mathf.Sin(pX * Mathf.PI / 2);
         }
 
-        public static float EaseOutCubic(float pX)
+        public static float OutCubic(float pX)
         {
             return 1 - Mathf.Pow(1 - pX, 3);
         }
 
-        public static float EaseOutCirc(float pX)
+        public static float OutCirc(float pX)
         {
             return Mathf.Sqrt(1 - Mathf.Pow(pX - 1, 2));
         }
 
-        public static float EaseOutQuint(float pX)
+        public static float OutQuint(float pX)
         {
             return 1 - Mathf.Pow(1 - pX, 5);
         }
@@ -142,22 +105,22 @@ namespace UnBocal.TweeningSystem.Easing
         /// </summary>
         /// <param name="pX"></param>
         /// <returns></returns>
-        public static float EaseOutElastic(float pX)
+        public static float OutElastic(float pX)
         {
             return pX == 0 ? 0 : pX == 1 ? 1 : Mathf.Pow(2, -10 * pX) * Mathf.Sin((pX * 10 - 0.75f) * c4) + 1;
         }
 
-        public static float EaseOutQuad(float pX)
+        public static float OutQuad(float pX)
         {
             return 1 - Mathf.Pow(1 - pX, 2);
         }
 
-        public static float EaseOutQuart(float pX)
+        public static float OutQuart(float pX)
         {
             return 1 - Mathf.Pow(1 - pX, 4);
         }
 
-        public static float EaseOutExpo(float pX)
+        public static float OutExpo(float pX)
         {
             return pX == 1 ? 1 : 1 - Mathf.Pow(2, -10 * pX);
         }
@@ -167,12 +130,12 @@ namespace UnBocal.TweeningSystem.Easing
         /// </summary>
         /// <param name="pX"></param>
         /// <returns></returns>
-        public static float EaseOutBack(float pX)
+        public static float OutBack(float pX)
         {
             return 1 + c3 * Mathf.Pow(pX - 1, 3) + c1 * Mathf.Pow(pX - 1, 2);
         }
 
-        public static float EaseOutBounce(float pX)
+        public static float OutBounce(float pX)
         {
             if (pX < 1 / d1)
             {
@@ -194,22 +157,22 @@ namespace UnBocal.TweeningSystem.Easing
         #endregion
 
         #region EaseInOuts
-        public static float EaseInOutSin(float pX)
+        public static float InOutSin(float pX)
         {
             return -(Mathf.Cos(Mathf.PI * pX) - 1) / 2;
         }
 
-        public static float EaseInOutCubic(float pX)
+        public static float InOutCubic(float pX)
         {
             return pX < 0.5 ? 4 * pX * pX * pX : 1 - Mathf.Pow(-2 * pX + 2, 3) / 2;
         }
 
-        public static float EaseInOutCirc(float pX)
+        public static float InOutCirc(float pX)
         {
             return pX < 0.5f ? (1 - Mathf.Sqrt(1 - Mathf.Pow(2 * pX, 2))) / 2 : (Mathf.Sqrt(1 - Mathf.Pow(-2 * pX + 2, 2)) + 1) / 2;
         }
 
-        public static float EaseInOutQuint(float pX)
+        public static float InOutQuint(float pX)
         {
             return pX < 0.5f ? 16 * pX * pX * pX * pX * pX : 1 - Mathf.Pow(-2 * pX + 2, 5) / 2;
         }
@@ -219,22 +182,22 @@ namespace UnBocal.TweeningSystem.Easing
         /// </summary>
         /// <param name="pX"></param>
         /// <returns></returns>
-        public static float EaseInOutElastic(float pX)
+        public static float InOutElastic(float pX)
         {
             return pX == 0 ? 0 : pX == 1 ? 1 : pX < 0.5f ? -(Mathf.Pow(2, 20 * pX - 10) * Mathf.Sin((20 * pX - 11.125f) * c5)) / 2 : Mathf.Pow(2, -20 * pX + 10) * Mathf.Sin((20 * pX - 11.125f) * c5) / 2 + 1;
         }
 
-        public static float EaseInOutQuad(float pX)
+        public static float InOutQuad(float pX)
         {
             return pX < 0.5f ? 2 * pX * pX : 1 - Mathf.Pow(-2 * pX + 2, 2) / 2;
         }
 
-        public static float EaseInOutQuart(float pX)
+        public static float InOutQuart(float pX)
         {
             return pX < 0.5f ? 8 * pX * pX * pX * pX : 1 - Mathf.Pow(-2 * pX + 2, 4) / 2;
         }
 
-        public static float EaseInOutExpo(float pX)
+        public static float InOutExpo(float pX)
         {
             return pX == 0 ? 0 : pX == 1 ? 1 : pX < 0.5f ? Mathf.Pow(2, 20 * pX - 10) / 2 : (2 - Mathf.Pow(2, -20 * pX + 10)) / 2;
         }
@@ -244,64 +207,16 @@ namespace UnBocal.TweeningSystem.Easing
         /// </summary>
         /// <param name="pX"></param>
         /// <returns></returns>
-        public static float EaseInOutBack(float pX)
+        public static float InOutBack(float pX)
         {
             return pX < 0.5f ? Mathf.Pow(2 * pX, 2) * ((c2 + 1) * 2 * pX - c2) / 2 : (Mathf.Pow(2 * pX - 2, 2) * ((c2 + 1) * (pX * 2 - 2) + c2) + 2) / 2;
         }
 
-        public static float EaseInOutBounce(float pX)
+        public static float InOutBounce(float pX)
         {
-            return pX < 0.5f ? (1 - EaseOutBounce(1 - 2 * pX)) / 2 : (1 + EaseOutBounce(2 * pX - 1)) / 2;
+            return pX < 0.5f ? (1 - OutBounce(1 - 2 * pX)) / 2 : (1 + OutBounce(2 * pX - 1)) / 2;
         }
         #endregion
-
-        /// <summary>
-        /// Eases <paramref name="pLi"/> according to <paramref name="pEaseType"/>'s easing function.
-        /// Returns <paramref name="pLi"/> by default.
-        /// </summary>
-        /// <param name="pLi">Linear interpolation value, supposed between 0 and 1</param>
-        /// <param name="pEaseType"></param>
-        /// <returns>Eased value</returns>
-        public static float Ease(float pLi, EaseType pEaseType = EaseType.None)
-        {
-            if (pLi < 0 || pLi > 1) Debug.LogWarning("interpolation value parameter outside [0;1] range");
-
-            return pEaseType switch
-            {
-                EaseType.None => pLi,
-                EaseType.EaseInSin => EaseInSin(pLi),
-                EaseType.EaseInCubic => EaseInCubic(pLi),
-                EaseType.EaseInQuad => EaseInQuad(pLi),
-                EaseType.EaseInQuart => EaseInQuart(pLi),
-                EaseType.EaseInQuint => EaseInQuint(pLi),
-                EaseType.EaseInCirc => EaseInCirc(pLi),
-                EaseType.EaseInElastic => EaseInElastic(pLi),
-                EaseType.EaseInBack => EaseInBack(pLi),
-                EaseType.EaseInBounce => EaseInBounce(pLi),
-                EaseType.EaseInExpo => EaseInExpo(pLi),
-                EaseType.EaseOutSin => EaseOutSin(pLi),
-                EaseType.EaseOutCubic => EaseOutCubic(pLi),
-                EaseType.EaseOutQuad => EaseOutQuad(pLi),
-                EaseType.EaseOutQuart => EaseOutQuart(pLi),
-                EaseType.EaseOutQuint => EaseOutQuint(pLi),
-                EaseType.EaseOutCirc => EaseOutCirc(pLi),
-                EaseType.EaseOutElastic => EaseOutElastic(pLi),
-                EaseType.EaseOutBack => EaseOutBack(pLi),
-                EaseType.EaseOutBounce => EaseOutBounce(pLi),
-                EaseType.EaseOutExpo => EaseOutExpo(pLi),
-                EaseType.EaseInOutSin => EaseInOutSin(pLi),
-                EaseType.EaseInOutCubic => EaseInOutCubic(pLi),
-                EaseType.EaseInOutQuad => EaseInOutQuad(pLi),
-                EaseType.EaseInOutQuart => EaseInOutQuart(pLi),
-                EaseType.EaseInOutQuint => EaseInOutQuint(pLi),
-                EaseType.EaseInOutCirc => EaseInOutCirc(pLi),
-                EaseType.EaseInOutElastic => EaseInOutElastic(pLi),
-                EaseType.EaseInOutBack => EaseInOutBack(pLi),
-                EaseType.EaseInOutBounce => EaseInOutBounce(pLi),
-                EaseType.EaseInOutExpo => EaseInOutExpo(pLi),
-                _ => pLi,
-            };
-        }
 
     }
 }

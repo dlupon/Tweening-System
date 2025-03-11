@@ -16,7 +16,7 @@ public class testing : MonoBehaviour
 	private void Start()
 	{
         _tween.Interpolate<Position>(transform).Add(Vector3.zero, Vector3.up);
-        _tween.Interpolate<Position, Vector3>(transform, Vector3.up, Vector3.up + Vector3.right, pDelay : 1f);
+        _tween.Interpolate<Position, Vector3>(transform, Vector3.up, Vector3.up + Vector3.right, pDelay : 1f, pEase : EaseFunction.OutExpo);
 
         _tween.Start();
     }
