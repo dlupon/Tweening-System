@@ -1,5 +1,6 @@
 // --~~~~======# Author : Lupon Dylan #======~~~~~~--- //
 // --~~~~======# Date   : 03 / 08 / 2025 #======~~~~-- //
+
 using UnityEngine;
 
 namespace UnBocal.TweeningSystem.Interfaces

@@ -1,5 +1,6 @@
 // --~~~~======# Author : Gallot Valentin #======~~~~~~--- //
 // --~~~~======# Date   : 03 / 05 / 2025  #======~~~~~~--- //
+
 using UnityEngine;
 
 namespace UnBocal.TweeningSystem.Easing
