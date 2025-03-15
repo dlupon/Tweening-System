@@ -1,10 +1,46 @@
 // --~~~~======# Author : Gallot Valentin #======~~~~~~--- //
 // --~~~~======# Date   : 03 / 05 / 2025  #======~~~~~~--- //
 
+using System;
 using UnityEngine;
 
 namespace UnBocal.TweeningSystem.Easing
 {
+    public enum EaseType
+    {
+        Flat,
+        InSin,
+        InCubic,
+        InQuad,
+        InQuart,
+        InQuint,
+        InCirc,
+        InElastic,
+        InBack,
+        InBounce,
+        InExpo,
+        OutSin,
+        OutCubic,
+        OutQuad,
+        OutQuart,
+        OutQuint,
+        OutCirc,
+        OutElastic,
+        OutBack,
+        OutBounce,
+        OutExpo,
+        InOutSin,
+        InOutCubic,
+        InOutQuad,
+        InOutQuart,
+        InOutQuint,
+        InOutCirc,
+        InOutElastic,
+        InOutBack,
+        InOutBounce,
+        InOutExpo,
+    }
+
     public static class EaseFunction
     {
         private const float c1 = 1.70158f;
@@ -15,6 +51,98 @@ namespace UnBocal.TweeningSystem.Easing
         private const float n1 = 7.5625f;
         private const float d1 = 2.75f;
 
+        /// <summary>
+        /// Eases <paramref name="pLi"/> according to <paramref name="pEaseType"/>'s easing function.
+        /// Returns <paramref name="pLi"/> by default.
+        /// </summary>
+        /// <param name="pLi">Linear interpolation value, supposed between 0 and 1</param>
+        /// <param name="pEaseType"></param>
+        /// <returns>Eased value</returns>
+        public static float Ease(float pLi, EaseType pEaseType = EaseType.Flat)
+        {
+            if (pLi < 0 || pLi > 1) Debug.LogWarning("interpolation value parameter outside [0;1] range");
+
+            return pEaseType switch
+            {
+                EaseType.Flat => pLi,
+                EaseType.InSin => InSin(pLi),
+                EaseType.InCubic => InCubic(pLi),
+                EaseType.InQuad => InQuad(pLi),
+                EaseType.InQuart => InQuart(pLi),
+                EaseType.InQuint => InQuint(pLi),
+                EaseType.InCirc => InCirc(pLi),
+                EaseType.InElastic => InElastic(pLi),
+                EaseType.InBack => InBack(pLi),
+                EaseType.InBounce => InBounce(pLi),
+                EaseType.InExpo => InExpo(pLi),
+                EaseType.OutSin => OutSin(pLi),
+                EaseType.OutCubic => OutCubic(pLi),
+                EaseType.OutQuad => OutQuad(pLi),
+                EaseType.OutQuart => OutQuart(pLi),
+                EaseType.OutQuint => OutQuint(pLi),
+                EaseType.OutCirc => OutCirc(pLi),
+                EaseType.OutElastic => OutElastic(pLi),
+                EaseType.OutBack => OutBack(pLi),
+                EaseType.OutBounce => OutBounce(pLi),
+                EaseType.OutExpo => OutExpo(pLi),
+                EaseType.InOutSin => InOutSin(pLi),
+                EaseType.InOutCubic => InOutCubic(pLi),
+                EaseType.InOutQuad => InOutQuad(pLi),
+                EaseType.InOutQuart => InOutQuart(pLi),
+                EaseType.InOutQuint => InOutQuint(pLi),
+                EaseType.InOutCirc => InOutCirc(pLi),
+                EaseType.InOutElastic => InOutElastic(pLi),
+                EaseType.InOutBack => InOutBack(pLi),
+                EaseType.InOutBounce => InOutBounce(pLi),
+                EaseType.InOutExpo => InOutExpo(pLi),
+                _ => pLi,
+            };
+        }
+
+        /// <summary>
+        /// Returns <paramref name="pEaseType"/> Easing function.
+        /// </summary>
+        /// <param name="pEaseType"></param>
+        /// <returns>Easing function</returns>
+        public static Func<float, float> GetFunction(EaseType pEaseType = EaseType.Flat)
+        {
+            return pEaseType switch
+            {
+                EaseType.Flat => Flat,
+                EaseType.InSin => InSin,
+                EaseType.InCubic => InCubic,
+                EaseType.InQuad => InQuad,
+                EaseType.InQuart => InQuart,
+                EaseType.InQuint => InQuint,
+                EaseType.InCirc => InCirc,
+                EaseType.InElastic => InElastic,
+                EaseType.InBack => InBack,
+                EaseType.InBounce => InBounce,
+                EaseType.InExpo => InExpo,
+                EaseType.OutSin => OutSin,
+                EaseType.OutCubic => OutCubic,
+                EaseType.OutQuad => OutQuad,
+                EaseType.OutQuart => OutQuart,
+                EaseType.OutQuint => OutQuint,
+                EaseType.OutCirc => OutCirc,
+                EaseType.OutElastic => OutElastic,
+                EaseType.OutBack => OutBack,
+                EaseType.OutBounce => OutBounce,
+                EaseType.OutExpo => OutExpo,
+                EaseType.InOutSin => InOutSin,
+                EaseType.InOutCubic => InOutCubic,
+                EaseType.InOutQuad => InOutQuad,
+                EaseType.InOutQuart => InOutQuart,
+                EaseType.InOutQuint => InOutQuint,
+                EaseType.InOutCirc => InOutCirc,
+                EaseType.InOutElastic => InOutElastic,
+                EaseType.InOutBack => InOutBack,
+                EaseType.InOutBounce => InOutBounce,
+                EaseType.InOutExpo => InOutExpo,
+                _ => Flat,
+            };
+        }
+        
         public static float Flat(float pRatio) => pRatio;
 
         #region easeIns
