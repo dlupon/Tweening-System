@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 using Unity.VisualScripting;
+using UnBocal.TweeningSystem.Interfaces;
+using System.Linq;
 
 // --~~~~======# Author : Lupon Dylan #======~~~~~~--- //
 // --~~~~======# Date   : 03 / 05 / 2025 #======~~~~-- //
@@ -17,7 +19,7 @@ namespace UnBocal.TweeningSystem
 		private static TweenExecutionHandler _instance;
 
 		// -------~~~~~~~~~~================# // Tween
-		private List<Tween> _tweens = new List<Tween>();
+		private List<IInterpolator> _interpolators = new List<IInterpolator>();
 
 		// -------~~~~~~~~~~================# // Coroutine
 		private Coroutine _coroutine;
@@ -43,22 +45,36 @@ namespace UnBocal.TweeningSystem
         }
 
         // -------~~~~~~~~~~================# // Tween Management
-        public static void AddTweenToUpdate(Tween pTween)
+        public static void AddInterpolators(List<IInterpolator> pInterpolators)
 		{
 			CheckInstance();
-			if (_instance._tweens.Contains(pTween)) return;
-			_instance._tweens.Add(pTween);
+			foreach (IInterpolator interpolator in pInterpolators)
+				AddInterpolator(interpolator);
         }
 
-		public static void RemoveTween(Tween pTween)
+        public static void AddInterpolator(IInterpolator pInterpolator)
         {
             CheckInstance();
-            if (!_instance._tweens.Contains(pTween)) return;
-            _instance._tweens.Remove(pTween);
+            if (_instance._interpolators.Contains(pInterpolator)) return;
+            _instance._interpolators.Add(pInterpolator);
         }
 
-		// -------~~~~~~~~~~================# // Coroutine
-		public static void StartUpdateTween()
+        public static void RemoveInterpolators(List<IInterpolator> pInterpolators)
+        {
+            CheckInstance();
+			foreach (IInterpolator interpolator in pInterpolators)
+				RemoveInterpolator(interpolator);
+        }
+
+        public static void RemoveInterpolator(IInterpolator pInterpolator)
+        {
+            CheckInstance();
+            if (!_instance._interpolators.Contains(pInterpolator)) return;
+            _instance._interpolators.Remove(pInterpolator);
+        }
+
+        // -------~~~~~~~~~~================# // Coroutine
+        public static void StartUpdateTween()
 		{
             CheckInstance();
 			_instance.StartCoroutine();
@@ -72,7 +88,7 @@ namespace UnBocal.TweeningSystem
 
 		private IEnumerator LoopThroughTweens()
 		{
-			while (_tweens.Count > 0)
+			while (_interpolators.Count > 0)
 			{
 				UpdateTweens();
                 yield return new WaitForEndOfFrameUnit();
@@ -84,9 +100,9 @@ namespace UnBocal.TweeningSystem
 
 		private void UpdateTweens()
 		{
-			int lLength = _tweens.Count;
-			for (int lTweenIndex = lLength - 1; lTweenIndex >= 0; lTweenIndex--)
-				_tweens[lTweenIndex].UpdateInterpolation();
+			int lInterpolatorCount = _interpolators.Count;
+			for (int lInterplatorIndex = lInterpolatorCount - 1; lInterplatorIndex >= 0; lInterplatorIndex--)
+				_interpolators[lInterplatorIndex].Update();
 
         }
 	}

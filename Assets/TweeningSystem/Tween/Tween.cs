@@ -11,7 +11,6 @@ using UnBocal.TweeningSystem.Interfaces;
 using UnBocal.TweeningSystem.Interpolations;
 using UnBocal.TweeningSystem.Easing;
 using UnityEngine;
-using System.Linq.Expressions;
 
 namespace UnBocal.TweeningSystem
 {
@@ -35,7 +34,7 @@ namespace UnBocal.TweeningSystem
         public void Start()
 		{
             DoOnInterpolator(StartInterpolator);
-            TweenExecutionHandler.AddTweenToUpdate(this);
+            TweenExecutionHandler.AddInterpolators(GetInterpolators());
 			TweenExecutionHandler.StartUpdateTween();
 		}
 
@@ -50,7 +49,7 @@ namespace UnBocal.TweeningSystem
 			DoOnInterpolator(UpdateInterpolator);
 
 			if (!_isFinished) return;
-			TweenExecutionHandler.RemoveTween(this);
+			TweenExecutionHandler.RemoveInterpolators(GetInterpolators());
 		}
 
 		// ----------------~~~~~~~~~~~~~~~~~~~==========================# // Object
@@ -138,6 +137,20 @@ namespace UnBocal.TweeningSystem
 			AddInterpolator(pObject, lInterpolator);
 
             return lInterpolator;
+        }
+
+        private List<IInterpolator> GetInterpolators()
+        {
+            List<IInterpolator> lCurrentInterpolators;
+            List<IInterpolator> lInterpolators = new List<IInterpolator>();
+            foreach (object lObject in _objectsAndInterpolators.Keys)
+            {
+                lCurrentInterpolators = _objectsAndInterpolators[lObject];
+                foreach (IInterpolator lInterpolation in lCurrentInterpolators)
+                    lInterpolators.Add(lInterpolation);
+            }
+
+            return lInterpolators;
         }
 
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolations
