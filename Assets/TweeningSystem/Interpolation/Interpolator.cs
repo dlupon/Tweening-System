@@ -1,91 +1,41 @@
 // --~~~~======# Author : Lupon Dylan #======~~~~~~--- //
 // --~~~~======# Date   : 03 / 08 / 2025 #======~~~~-- //
 
-using System.Reflection;
 using System;
 using UnityEngine;
-using UnBocal.TweeningSystem.Interfaces;
 using System.Collections.Generic;
 
 namespace UnBocal.TweeningSystem.Interpolations
 {
-    public class Interpolator<ValueType> : IInterpolator
+    public class Interpolator
     {
-        // -------~~~~~~~~~~================# // Property
-        public string PropertyName { get; set; }
-        public ValueType Property { get => _getProperty(); private set => _setProperty(value); }
-
-        private Func<ValueType> _getProperty;
-        private Action<ValueType> _setProperty;
-
         // -------~~~~~~~~~~================# // Time
+        public bool IsFinished => _updateState == null;
         private float _timeSinceStart;
 
         // -------~~~~~~~~~~================# // State
         private Action _updateState = null;
 
         // -------~~~~~~~~~~================# // Interpolation
-        private List<Interpolation<ValueType>> _interpolations = new List<Interpolation<ValueType>>();
-        private Interpolation<ValueType> _currentInterpolation;
-        private Interpolation<ValueType> _nextInterpolation;
+        private List<Interpolation> _interpolations = new List<Interpolation>();
+        private Interpolation _currentInterpolation;
+        private Interpolation _nextInterpolation;
         private int _currentInterpolationIndex = 0;
         private bool _isOnLastInterpolation = false;
-
-        // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Initialization
-        /// <summary>
-        /// Create an interpolator and store the property's ref value.
-        /// </summary>
-        /// <param name="pObject">Targeted object.</param>
-        /// <param name="pPropertyName">Object property name.</param>
-        /// <returns>An interpolator with the property's ref stored and with the right ValueType</returns>
-        public static Interpolator<ValueType> GetNew(object pObject, string pPropertyName)
-        {
-            Interpolator<ValueType> lInterpolator = new Interpolator<ValueType>();
-            lInterpolator.PropertyName = pPropertyName;
-
-            lInterpolator.StoreRefValue(pObject, pPropertyName);
-
-            return lInterpolator;
-        }
-
-        /// <summary>
-        /// Store the property's ref.
-        /// </summary>
-        /// <param name="pObject">Targeted object.</param>
-        /// <param name="pPropertyName">Object property name.</param>
-        public void StoreRefValue(object pObject, string pPropertyName)
-        {
-
-            Type lType = pObject.GetType();
-
-            // Store pProperty's Whether It's A Property Or a Field 
-            PropertyInfo lPropInfo = lType.GetProperty(pPropertyName);
-            if (lPropInfo != null)
-            {
-                _getProperty = () => (ValueType)lPropInfo.GetValue(pObject);
-                _setProperty = (ValueType value) => lPropInfo.SetValue(pObject, value);
-            }
-            else
-            {
-                FieldInfo lFieldInfo = lType.GetField(pPropertyName);
-                _getProperty = () => (ValueType)lFieldInfo.GetValue(pObject);
-                _setProperty = (ValueType value) => lFieldInfo.SetValue(pObject, value);
-            }
-        }
 
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolation
         /// <summary>
         /// Add a new inteprolation the interpolation list.
         /// </summary>
-        /// <param name="pUpdatePropertyMethod">Method used to update the property.</param>
+        /// <param name="pInterpolation">Method used to update the property.</param>
         /// <param name="pObject">Targeted object.</param>
         /// <param name="pPropertyName">Object property name.</param>
         /// <param name="pDuration">Overall duration of the inteprolation (in seconds).</param>
         /// <param name="pDelay">How much the interpolation is delayed (in seconds).</param>
-        public void Add(Func<float, ValueType> pUpdatePropertyMethod, object pObject, string pPropertyName, float pDuration, float pDelay)
+        public void Add(Action<float> pInterpolation, float pDuration, float pDelay)
         {
-            Interpolation<ValueType> lInterpolation = new Interpolation<ValueType>();
-            lInterpolation.UpdatePropertyMethod = pUpdatePropertyMethod;
+            Interpolation lInterpolation = new Interpolation();
+            lInterpolation.InterpolationMethod = pInterpolation;
             lInterpolation.Duration = pDuration;
             lInterpolation.Delay = pDelay;
 
@@ -143,8 +93,6 @@ namespace UnBocal.TweeningSystem.Interpolations
         }
 
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // 
-        public bool IsFinished() => _updateState == null;
-
         public void Reset() { }
 
         /// <summary>
@@ -170,9 +118,8 @@ namespace UnBocal.TweeningSystem.Interpolations
         /// </summary>
         public void UpdateProperty()
         {
-            Property = _currentInterpolation.CurrentValueOnRatio;
+            _currentInterpolation.InterpolationMethod(_currentInterpolation.Ratio);
             CheckAndSwitchInterpolation();
         }
-
     }
 }

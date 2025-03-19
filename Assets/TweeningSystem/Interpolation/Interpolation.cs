@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnBocal.TweeningSystem.Interpolations
 {
-    public class Interpolation<ValueType>
+    public class Interpolation
     {
         // -------~~~~~~~~~~================# // Time
         public float Ratio => Mathf.Clamp01((Time.time - StartTime) / EndTimeRatio);
@@ -17,8 +17,7 @@ namespace UnBocal.TweeningSystem.Interpolations
         public float Delay;
 
         // -------~~~~~~~~~~================# // Value
-        public Func<float, ValueType> UpdatePropertyMethod;
-        public ValueType CurrentValueOnRatio => UpdatePropertyMethod(Ratio);
+        public Action<float> InterpolationMethod;
 
         /// <summary>
         /// Reset time so the Ratio is at the right place.
@@ -27,6 +26,11 @@ namespace UnBocal.TweeningSystem.Interpolations
         {   
             StartTime = Time.time + Delay;
             EndTimeRatio = Duration + Delay;
+        }
+
+        public void Interpolate()
+        {
+
         }
     }
 }
