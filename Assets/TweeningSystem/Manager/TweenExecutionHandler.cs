@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
-using Unity.VisualScripting;
 using UnBocal.TweeningSystem.Interpolations;
 
 // --~~~~======# Author : Lupon Dylan #======~~~~~~--- //
@@ -88,7 +87,7 @@ namespace UnBocal.TweeningSystem
 			while (_interpolators.Count > 0)
 			{
 				UpdateTweens();
-                yield return new WaitForEndOfFrameUnit();
+                yield return new WaitForSeconds(0);
 			}
 
 			_coroutine = null;
