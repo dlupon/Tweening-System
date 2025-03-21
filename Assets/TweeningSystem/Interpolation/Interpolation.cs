@@ -1,4 +1,4 @@
-// --~~~~======# Author : Lupon Dylan #======~~~~~~--- //
+﻿// --~~~~======# Author : Lupon Dylan #======~~~~~~--- //
 // --~~~~======# Date   : 03 / 15 / 2025 #======~~~~-- //
 
 using System;
@@ -9,10 +9,10 @@ namespace UnBocal.TweeningSystem.Interpolations
     public class Interpolation
     {
         // -------~~~~~~~~~~================# // Time
-        public float Ratio => Mathf.Clamp01((Time.time - StartTime) / EndTimeRatio);
+        public float Ratio => Mathf.Clamp01((Time.time - StartTime) / (EndTime - StartTime));
 
         private float StartTime;
-        private float EndTimeRatio;
+        private float EndTime;
         public float Duration;
         public float Delay;
 
@@ -23,14 +23,9 @@ namespace UnBocal.TweeningSystem.Interpolations
         /// Reset time so the Ratio is at the right place.
         /// </summary>
         public void ResetTime()
-        {   
-            StartTime = Time.time + Delay;
-            EndTimeRatio = Duration + Delay;
-        }
-
-        public void Interpolate()
         {
-
+            StartTime = Time.time + Delay;
+            EndTime = StartTime + Duration;
         }
     }
 }

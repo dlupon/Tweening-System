@@ -47,7 +47,7 @@ namespace UnBocal.TweeningSystem
         public static void AddInterpolators(List<Interpolator> pInterpolators)
 		{
 			CheckInstance();
-            _instance._interpolators.AddRange(pInterpolators);
+            _instance._interpolators.UnionWith(pInterpolators);
         }
 
         public static void AddInterpolator(Interpolator pInterpolator)

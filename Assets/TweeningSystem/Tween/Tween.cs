@@ -154,28 +154,95 @@ namespace UnBocal.TweeningSystem
             lInterpolator.Add(pInterpolationMethod, pDuration, pDelay);
         }
 
-        public void Position(Transform pTransform, Vector3 pStartValue, Vector3 pEndValue, float pDuration, Func<float, float> pEasing, float pDelay = 0f)
+        #region// -------~~~~~~~~~~================# // Transform Position
+        public void Position(Transform pTransform, Vector3 pStartValue, Vector3 pEndValue, float pDuration, EaseType pEasing = EaseType.Flat, float pDelay = 0f)
+         => Position(pTransform, pStartValue, pEndValue, pDuration, EaseFunction.GetFunction(pEasing), pDelay);
+
+        public void Position(Transform pTransform, Vector3 pStartValue, Vector3 pEndValue, float pDuration, AnimationCurve pCurve, float pDelay = 0f)
+         => Position(pTransform, pStartValue, pEndValue, pDuration, pCurve.Evaluate, pDelay);
+
+        private void Position(Transform pTransform, Vector3 pStartValue, Vector3 pEndValue, float pDuration, Func<float, float> pEasing, float pDelay = 0f)
 		{
             // Get Interpolation Method Based On ValueType
-            Action<float> lInterpolationMethod = (float pTime) => pTransform.position = Vector3.LerpUnclamped(pStartValue, pEndValue, pEasing(pTime));
+            Action<float> lInterpolationMethod = (float pRatio) => pTransform.position = Vector3.LerpUnclamped(pStartValue, pEndValue, pEasing(pRatio));
 
             AddInterpolation(pTransform, nameof(pTransform.position), lInterpolationMethod, pDuration, pDelay);
         }
+        #endregion
 
-        public void localScale(Transform pTransform, Vector3 pStartScale, Vector3 pEndScale, float pDuration, Func<float, float> pEasing, float pDelay = 0f)
+        #region// -------~~~~~~~~~~================# // Transform Local Scale
+        public void localScale(Transform pTransform, Vector3 pStartScale, Vector3 pEndScale, float pDuration, EaseType pEasing = EaseType.Flat, float pDelay = 0f)
+            => localScale(pTransform, pStartScale, pEndScale, pDuration, EaseFunction.GetFunction(pEasing), pDelay);
+
+        public void localScale(Transform pTransform, Vector3 pStartScale, Vector3 pEndScale, float pDuration, AnimationCurve pCurve, float pDelay = 0f)
+            => localScale(pTransform, pStartScale, pEndScale, pDuration, pCurve.Evaluate, pDelay);
+
+        private void localScale(Transform pTransform, Vector3 pStartScale, Vector3 pEndScale, float pDuration, Func<float, float> pEasing, float pDelay = 0f)
         {
-            // Get Interpolation Method Based On ValueType
-            Action<float> lInterpolationMethod = (float pTime) => pTransform.localScale = Vector3.LerpUnclamped(pStartScale, pEndScale, pEasing(pTime));
+            Action<float> lInterpolationMethod = (float pRatio) => pTransform.localScale = Vector3.LerpUnclamped(pStartScale, pEndScale, pEasing(pRatio));
 
             AddInterpolation(pTransform, nameof(pTransform.localScale), lInterpolationMethod, pDuration, pDelay);
         }
+        #endregion
 
-        public void localRotation(Transform pTransform, Quaternion pStartRotation, Quaternion pEndRotation, float pDuration, Func<float, float> pEasing, float pDelay = 0f)
+        #region// -------~~~~~~~~~~================# // Transform Local Rotation
+        public void localRotation(Transform pTransform, Quaternion pStartRotation, Quaternion pEndRotation, float pDuration, EaseType pEasing, float pDelay = 0f)
+            => localRotation(pTransform, pStartRotation, pEndRotation, pDuration, EaseFunction.GetFunction(pEasing), pDelay);
+
+        public void localRotation(Transform pTransform, Quaternion pStartRotation, Quaternion pEndRotation, float pDuration, AnimationCurve pCurve, float pDelay = 0f)
+            => localRotation(pTransform, pStartRotation, pEndRotation, pDuration, pCurve.Evaluate, pDelay);
+
+        private void localRotation(Transform pTransform, Quaternion pStartRotation, Quaternion pEndRotation, float pDuration, Func<float, float> pEasing, float pDelay = 0f)
         {
-            // Get Interpolation Method Based On ValueType
-            Action<float> lInterpolationMethod = (float pTime) => pTransform.localRotation = Quaternion.LerpUnclamped(pStartRotation, pEndRotation, pEasing(pTime));
+            Action<float> lInterpolationMethod = (float pRatio) => pTransform.localRotation = Quaternion.LerpUnclamped(pStartRotation, pEndRotation, pEasing(pRatio));
 
             AddInterpolation(pTransform, nameof(pTransform.localRotation), lInterpolationMethod, pDuration, pDelay);
         }
+        #endregion
+
+        #region// -------~~~~~~~~~~================# // RectTransform Position
+        public void UIPosition(RectTransform pTransform, Vector3 pStartValue, Vector3 pEndValue, float pDuration, EaseType pEasing = EaseType.Flat, float pDelay = 0f)
+         => UIPosition(pTransform, pStartValue, pEndValue, pDuration, EaseFunction.GetFunction(pEasing), pDelay);
+
+        public void UIPosition(RectTransform pTransform, Vector3 pStartValue, Vector3 pEndValue, float pDuration, AnimationCurve pCurve, float pDelay = 0f)
+         => UIPosition(pTransform, pStartValue, pEndValue, pDuration, pCurve.Evaluate, pDelay);
+
+        private void UIPosition(RectTransform pRectTransform, Vector3 pStartValue, Vector3 pEndValue, float pDuration, Func<float, float> pEasing, float pDelay = 0f)
+        {
+            Action<float> lInterpolationMethod = (float pRatio) => pRectTransform.position = Vector3.LerpUnclamped(pStartValue, pEndValue, pEasing(pRatio));
+
+            AddInterpolation(pRectTransform, nameof(pRectTransform.position), lInterpolationMethod, pDuration, pDelay);
+        }
+        #endregion
+
+        #region// -------~~~~~~~~~~================# // RectTransform Local Scale
+        public void UIScale(RectTransform pRectTransform, Vector3 pStartScale, Vector3 pEndScale, float pDuration, EaseType pEasing = EaseType.Flat, float pDelay = 0f)
+            => UIScale(pRectTransform, pStartScale, pEndScale, pDuration, EaseFunction.GetFunction(pEasing), pDelay);
+
+        public void UIScale(RectTransform pRectTransform, Vector3 pStartScale, Vector3 pEndScale, float pDuration, AnimationCurve pCurve, float pDelay = 0f)
+            => UIScale(pRectTransform, pStartScale, pEndScale, pDuration, pCurve.Evaluate, pDelay);
+
+        private void UIScale(RectTransform pRectTransform, Vector3 pStartScale, Vector3 pEndScale, float pDuration, Func<float, float> pEasing, float pDelay = 0f)
+        {
+            Action<float> lInterpolationMethod = (float pRatio) => pRectTransform.localScale = Vector3.LerpUnclamped(pStartScale, pEndScale, pEasing(pRatio));
+
+            AddInterpolation(pRectTransform, nameof(pRectTransform.localScale), lInterpolationMethod, pDuration, pDelay);
+        }
+        #endregion
+
+        #region// -------~~~~~~~~~~================# // RectTransform Rotation
+        public void UIRotation(RectTransform pRectTransform, Quaternion pStartRotation, Quaternion pEndRotation, float pDuration, EaseType pEasing, float pDelay = 0f)
+            => UIRotation(pRectTransform, pStartRotation, pEndRotation, pDuration, EaseFunction.GetFunction(pEasing), pDelay);
+
+        public void UIRotation(RectTransform pRectTransform, Quaternion pStartRotation, Quaternion pEndRotation, float pDuration, AnimationCurve pCurve, float pDelay = 0f)
+            => UIRotation(pRectTransform, pStartRotation, pEndRotation, pDuration, pCurve.Evaluate, pDelay);
+
+        private void UIRotation(RectTransform pRectTransform, Quaternion pStartRotation, Quaternion pEndRotation, float pDuration, Func<float, float> pEasing, float pDelay = 0f)
+        {
+            Action<float> lInterpolationMethod = (float pRatio) => pRectTransform.rotation = Quaternion.LerpUnclamped(pStartRotation, pEndRotation, pEasing(pRatio));
+
+            AddInterpolation(pRectTransform, nameof(pRectTransform.rotation), lInterpolationMethod, pDuration, pDelay);
+        }
+        #endregion
     }
 }

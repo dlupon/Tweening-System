@@ -4,7 +4,7 @@
 using System;
 using UnityEngine;
 
-namespace UnBocal.TweeningSystem.Easing
+namespace UnBocal.TweeningSystem
 {
     public enum EaseType
     {
