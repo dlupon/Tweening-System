@@ -2,6 +2,7 @@
 // --~~~~======# Date   : 03 / 15 / 2025 #======~~~~-- //
 
 using System;
+using TMPro;
 using UnityEngine;
 
 namespace UnBocal.TweeningSystem.Interpolations
@@ -19,6 +20,13 @@ namespace UnBocal.TweeningSystem.Interpolations
         // -------~~~~~~~~~~================# // Value
         public Action<float> InterpolationMethod;
 
+        // -------~~~~~~~~~~================# // Interpolation
+        public Action Update;
+
+        // -------~~~~~~~~~~================# // Initialization
+        public Interpolation() => Update = UpdateWait;
+
+        // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Time
         /// <summary>
         /// Reset time so the Ratio is at the right place.
         /// </summary>
@@ -26,6 +34,22 @@ namespace UnBocal.TweeningSystem.Interpolations
         {
             StartTime = Time.time + Delay;
             EndTime = StartTime + Duration;
+
+            if (Delay > 0) Update = UpdateWait;
+            else Update = UpdateInterpolation;
+        }
+
+        // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolation
+        private void UpdateWait()
+        {
+            if (Time.time < StartTime) return;
+            Update = UpdateInterpolation;
+        }
+
+        private void UpdateInterpolation()
+        {
+            InterpolationMethod(Ratio);
+            if (Ratio >= 1) Update = null; ;
         }
     }
 }

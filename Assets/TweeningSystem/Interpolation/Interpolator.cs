@@ -118,7 +118,7 @@ namespace UnBocal.TweeningSystem.Interpolations
         /// </summary>
         public void UpdateProperty()
         {
-            _currentInterpolation.InterpolationMethod(_currentInterpolation.Ratio);
+            _currentInterpolation.Update?.Invoke();
             CheckAndSwitchInterpolation();
         }
     }
