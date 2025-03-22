@@ -11,10 +11,15 @@ public class testing : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             float lDeplay = Random.value * .5f;
-            _tween.Clear();
-            _tween.localRotation(transform, Quaternion.identity, Quaternion.identity * Quaternion.AngleAxis(180f, Vector3.up), 1f, EaseType.Flat, lDeplay);
-            _tween.localScale(transform, Vector3.one * 2f, Vector3.one, 1f, EaseType.Flat, lDeplay);
+            _tween.Empty();
+            transform.localScale = Vector3.one * 2f;
+            _tween.localScale(transform, Vector3.one * 2f, Vector3.one, 1f, EaseType.InOutElastic, lDeplay);
             _tween.Start();
+        }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            Tween.RemoveAll(transform);
         }
     }
 }

@@ -10,6 +10,7 @@ namespace UnBocal.TweeningSystem.Interpolations
     public class Interpolation
     {
         // -------~~~~~~~~~~================# // Time
+        public bool IsFinished => Update == null;
         public float Ratio => Mathf.Clamp01((Time.time - StartTime) / (EndTime - StartTime));
 
         private float StartTime;
@@ -30,7 +31,7 @@ namespace UnBocal.TweeningSystem.Interpolations
         /// <summary>
         /// Reset time so the Ratio is at the right place.
         /// </summary>
-        public void ResetTime()
+        public void Start()
         {
             StartTime = Time.time + Delay;
             EndTime = StartTime + Duration;

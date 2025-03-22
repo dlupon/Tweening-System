@@ -63,7 +63,7 @@ namespace UnBocal.TweeningSystem.Interpolations
             // Store Current Interpolation
             _currentInterpolationIndex = Mathf.Clamp(pIndex, 0, _interpolations.Count - 1);
             _currentInterpolation = _interpolations[_currentInterpolationIndex];
-            _currentInterpolation.ResetTime();
+            _currentInterpolation.Start();
 
             // Try to Store Next Interpolation
             _isOnLastInterpolation = _currentInterpolationIndex >= _interpolations.Count - 1;

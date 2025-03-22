@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using UnityEngine.Events;
 using UnityEngine;
 using UnBocal.TweeningSystem.Interpolations;
+using Unity.VisualScripting;
 
 namespace UnBocal.TweeningSystem
 {
@@ -19,8 +20,53 @@ namespace UnBocal.TweeningSystem
 		// -------~~~~~~~~~~================# // Time
 		bool _isFinished = true;
 
+        // -------~~~~~~~~~~================# // Tween
+        private static Dictionary<object, List<Tween>> _objectAndTweens = new Dictionary<object, List<Tween>>();
+
         // -------~~~~~~~~~~================# // Interpolation
-        private Dictionary<object, Dictionary<string, Interpolator>> _objectsAndInterpolators = new Dictionary<object, Dictionary<string, Interpolator>>();
+        private List<object> Objects => _objectsAndInterpolators.Keys.ToList();
+        private Dictionary<object, Dictionary<string, List<Interpolation>>> _objectsAndInterpolators = new Dictionary<object, Dictionary<string, List<Interpolation>>>();
+
+        // ----------------~~~~~~~~~~~~~~~~~~~==========================# //  Tween Management 
+        public static void RemoveAll(object pObject)
+        {
+            if (!_objectAndTweens.ContainsKey(pObject)) return;
+            int lTweenCount = _objectAndTweens[pObject].Count;
+
+            Tween lCurrentTween;
+            for (int lTweenIndex = lTweenCount - 1; lTweenIndex >= 0; lTweenIndex--)
+            {
+                lCurrentTween = _objectAndTweens[pObject][lTweenIndex];
+                lCurrentTween.Remove(pObject);
+            }
+
+            _objectAndTweens.Remove(pObject);
+        }
+
+        public static void RemoveTweenFromObject(Tween pTween, object pObject)
+        {
+            /*Init();
+            if (!_instance._objectAndTweens.ContainsKey(pObject)) return;
+
+            if (_instance._objectAndTweens[pObject].Contains(pTween))
+                _instance._objectAndTweens[pObject].Remove(pTween);
+
+            RemoveInterpolators(pTween.GetInterpolators(pObject));
+
+            _instance._objectAndTweens.Remove(pObject);*/
+        }
+
+        private void StoreTween()
+        {
+            foreach (object lObject in Objects)
+            {
+                if (!_objectAndTweens.ContainsKey(lObject))
+                   _objectAndTweens[lObject] = new List<Tween>();
+
+                if (_objectAndTweens[lObject].Contains(this)) continue;
+                _objectAndTweens[lObject].Add(this);
+            }
+        }
 
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Control
         /// <summary>
@@ -28,16 +74,23 @@ namespace UnBocal.TweeningSystem
         /// </summary>
         public void Start()
 		{
-            DoOnInterpolator(StartInterpolator);
-            TweenExecutionHandler.AddInterpolators(GetInterpolators());
+            StoreTween();
+            DoOnInterpolations(StartInterpolation);
+            TweenExecutionHandler.AddInterpolations(GetInterpolations());
 			TweenExecutionHandler.StartUpdateTween();
 		}
 
-        public void Clear()
+        public void Empty()
         {
-            DoOnInterpolator(StartInterpolator);
-            TweenExecutionHandler.RemoveInterpolators(GetInterpolators());
+            TweenExecutionHandler.RemoveInterpolations(GetInterpolations());
             _objectsAndInterpolators.Clear();
+        }
+
+        public void Remove(object pObject)
+        {
+            if (!_objectsAndInterpolators.ContainsKey(pObject)) return;
+            TweenExecutionHandler.RemoveInterpolations(GetInterpolations(pObject));
+            _objectsAndInterpolators[pObject].Clear();
         }
 
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Update
@@ -48,52 +101,35 @@ namespace UnBocal.TweeningSystem
 		{
 			_isFinished = true;
 
-			DoOnInterpolator(UpdateInterpolator);
+			DoOnInterpolations(UpdateInterpolator);
 
 			if (!_isFinished) return;
-			TweenExecutionHandler.RemoveInterpolators(GetInterpolators());
+			TweenExecutionHandler.RemoveInterpolations(GetInterpolations());
 		}
-
-		// ----------------~~~~~~~~~~~~~~~~~~~==========================# // Object
-        /// <summary>
-        /// Create a new list of Interpolator for the given object.
-        /// </summary>
-        /// <param name="pObject">Targeted Object.</param>
-		private void AddObject(object pObject) => _objectsAndInterpolators[pObject] = new Dictionary<string, Interpolator>();
 
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolator
         /// <summary>
-        /// Store the givent interpolator in the right place in the dictionary.
-        /// </summary>
-        /// <param name="pObject">Targeted Object.</param>
-        /// <param name="pInterpolator">Interpolator to store.</param>
-        private void AddInterpolator(object pObject, string pPropertyName, Interpolator pInterpolator)
-        {
-			if (!_objectsAndInterpolators.ContainsKey(pObject)) AddObject(pObject);
-			_objectsAndInterpolators[pObject][pPropertyName] = pInterpolator;
-        }
-
-        /// <summary>
         /// Call pFunc on every Interplator.
         /// </summary>
-        private void DoOnInterpolator(Action<Interpolator> pFunc)
+        private void DoOnInterpolations(Action<Interpolation> pFunc)
         {
             foreach (object lObject in _objectsAndInterpolators.Keys)
                 foreach (string lPropertyName in _objectsAndInterpolators[lObject].Keys)
-                    pFunc(_objectsAndInterpolators[lObject][lPropertyName]);
+                    foreach (Interpolation lInterpolation in _objectsAndInterpolators[lObject][lPropertyName])
+                        pFunc(lInterpolation);
         }
 
         /// <summary>
         /// Update pInterpolator and tells the tween if it is finished.
         /// </summary>
-        private void UpdateInterpolator(Interpolator pInterpolator)
+        private void UpdateInterpolator(Interpolation pInterpolator)
         {
             pInterpolator.Update();
             if (pInterpolator.IsFinished) return;
             _isFinished = false;
         }
 
-		private void StartInterpolator(Interpolator pInterpolator) => pInterpolator.Start();
+		private void StartInterpolation(Interpolation pInterpolator) => pInterpolator.Start();
 
         /// <summary>
         /// Find or create the appropriate interpolator.
@@ -102,42 +138,34 @@ namespace UnBocal.TweeningSystem
         /// <param name="pObject">Targeted object.</param>
         /// <param name="pPropertyName">Object property name.</param>
         /// <returns>The right interolator based on the parameters</returns>
-		private Interpolator FindInterpolator(object pObject, string pPropertyName)
+		private List<Interpolation> GetInterpolationList(object pObject, string pPropertyName)
         {
-            // Try Find Object (key) And Interpolation (Value)
-            if (_objectsAndInterpolators.Keys.Contains(pObject)
-                && _objectsAndInterpolators[pObject].Keys.Contains(pPropertyName))
-                return _objectsAndInterpolators[pObject][pPropertyName];
-
             // No Object (key) Found Then Create One
-            else if (!_objectsAndInterpolators.Keys.Contains(pObject)) AddObject(pObject);
+            if (!_objectsAndInterpolators.Keys.Contains(pObject))
+                _objectsAndInterpolators[pObject] = new Dictionary<string, List<Interpolation>>();
 
-			// If No Interpolation Has Been Found, Then Create One
-			return CreateInterpolator(pObject, pPropertyName);
-		}
+            if (!_objectsAndInterpolators[pObject].ContainsKey(pPropertyName))
+                _objectsAndInterpolators[pObject][pPropertyName] = new List<Interpolation>();
 
-        /// <summary>
-        /// Create and store an interpolator based on the given property.
-        /// </summary>
-        /// <typeparam name="ValueType">What type of property is interpolated.</typeparam>
-        /// <param name="pObject">Targeted object.</param>
-        /// <param name="pPropertyName">Object property name.</param>
-        /// <returns></returns>
-		private Interpolator CreateInterpolator(object pObject, string pPropertyName)
-		{
-            // Create Interpolation And Store Property
-            Interpolator lInterpolator = new Interpolator();
-			AddInterpolator(pObject, pPropertyName, lInterpolator);
-
-            return lInterpolator;
+            return _objectsAndInterpolators[pObject][pPropertyName];
         }
 
-        private List<Interpolator> GetInterpolators()
+        public List<Interpolation> GetInterpolations()
         {
-            List<Interpolator> lInterpolators = new List<Interpolator>();
-            foreach (object lObject in _objectsAndInterpolators.Keys)
-                foreach (string pPropertyName in _objectsAndInterpolators[lObject].Keys)
-                    lInterpolators.Add(_objectsAndInterpolators[lObject][pPropertyName]);
+            List<Interpolation> lInterpolators = new List<Interpolation>();
+            DoOnInterpolations(lInterpolators.Add);
+
+            return lInterpolators;
+        }
+
+        public List<Interpolation> GetInterpolations(object pObject)
+        {
+            if (!_objectsAndInterpolators.Keys.Contains(pObject)) return null;
+
+            List<Interpolation> lInterpolators = new List<Interpolation>();
+            foreach (string lPropertyName in _objectsAndInterpolators[pObject].Keys)
+                foreach (Interpolation lInterpolation in _objectsAndInterpolators[pObject][lPropertyName])
+                    lInterpolators.Add(lInterpolation);
 
             return lInterpolators;
         }
@@ -145,11 +173,12 @@ namespace UnBocal.TweeningSystem
         // ----------------~~~~~~~~~~~~~~~~~~~==========================# // Interpolations
         private void AddInterpolation(object pObject, string pPropertyName, Action<float> pInterpolationMethod, float pDuration, float pDelay)
         {
-            // Find Interpolation
-            Interpolator lInterpolator = FindInterpolator(pObject, pPropertyName);
+            Interpolation lInterpolation = new Interpolation();
+            lInterpolation.InterpolationMethod = pInterpolationMethod;
+            lInterpolation.Duration = pDuration;
+            lInterpolation.Delay = pDelay;
 
-            // Add New Intrpolation To The Rigt Interpolator
-            lInterpolator.Add(pInterpolationMethod, pDuration, pDelay);
+            GetInterpolationList(pObject, pPropertyName).Add(lInterpolation);
         }
 
         #region// -------~~~~~~~~~~================# // Transform Position
